@@ -254,10 +254,10 @@ type AuthorizationServer struct {
 	// +kubebuilder:default=grpc
 	ServiceAPIType AuthorizationServiceAPIType `json:"serviceAPIType,omitempty"`
 
-	// HttpAuthorizationServerSettings defines configurations for interacting with an external HTTP authorization server.
+	// HTTPServerSettings defines configurations for interacting with an external HTTP authorization server.
 	//
 	// +optional
-	HttpServerSettings *HttpAuthorizationServerSettings `json:"httpSettings,omitempty"`
+	HTTPServerSettings *HTTPAuthorizationServerSettings `json:"httpSettings,omitempty"`
 
 	// AuthPolicy sets a default authorization policy for client requests.
 	// This policy will be used unless overridden by individual routes.
@@ -287,8 +287,8 @@ type AuthorizationServer struct {
 	WithRequestBody *AuthorizationServerBufferSettings `json:"withRequestBody,omitempty"`
 }
 
-// HttpAuthorizationServerSettings defines configurations for interacting with an external HTTP authorization server.
-type HttpAuthorizationServerSettings struct {
+// HTTPAuthorizationServerSettings defines configurations for interacting with an external HTTP authorization server.
+type HTTPAuthorizationServerSettings struct {
 	// PathPrefix Sets a prefix to the value of authorization request header Path.
 	//
 	// +optional
@@ -307,21 +307,21 @@ type HttpAuthorizationServerSettings struct {
 	// Note that in addition to the the user’s supplied matchers, Host, Method, Path, Content-Length, and Authorization are additionally included in the list.
 	//
 	// +optional
-	AllowedAuthorizationHeaders []HttpAuthorizationServerAllowedHeaders `json:"allowedAuthorizationHeaders,omitempty"`
+	AllowedAuthorizationHeaders []HTTPAuthorizationServerAllowedHeaders `json:"allowedAuthorizationHeaders,omitempty"`
 
 	// AllowedUpstreamHeaders specifies authorization response headers that will be added to the original client request.
 	// Note that coexistent headers will be overridden.
 	//
 	// +optional
-	AllowedUpstreamHeaders []HttpAuthorizationServerAllowedHeaders `json:"allowedUpstreamHeaders,omitempty"`
+	AllowedUpstreamHeaders []HTTPAuthorizationServerAllowedHeaders `json:"allowedUpstreamHeaders,omitempty"`
 }
 
-// HttpAuthorizationServerAllowedHeaders specifies how to conditionally match against allowed headers
+// HTTPAuthorizationServerAllowedHeaders specifies how to conditionally match against allowed headers
 // in the context of HTTP authorization. It includes options such as Exact, Prefix, Suffix,
 // Contains, and IgnoreCase to customize header matching criteria. However, regex support
 // is intentionally excluded to simplify the user experience and prevent potential issues.
 // One of Prefix, Exact, Suffix or Contains must be provided.
-type HttpAuthorizationServerAllowedHeaders struct {
+type HTTPAuthorizationServerAllowedHeaders struct {
 	// Exact specifies a string that the header name must be equal to.
 	//
 	// +optional

@@ -199,9 +199,9 @@ type GlobalExternalAuthConfig struct {
 	FailOpen                        bool
 	Context                         map[string]string
 	ServiceAPIType                  contour_api_v1.AuthorizationServiceAPIType
-	HttpAllowedAuthorizationHeaders []contour_api_v1.HttpAuthorizationServerAllowedHeaders
-	HttpAllowedUpstreamHeaders      []contour_api_v1.HttpAuthorizationServerAllowedHeaders
-	HttpPathPrefix                  string
+	HTTPAllowedAuthorizationHeaders []contour_api_v1.HTTPAuthorizationServerAllowedHeaders
+	HTTPAllowedUpstreamHeaders      []contour_api_v1.HTTPAuthorizationServerAllowedHeaders
+	HTTPPathPrefix                  string
 	WithRequestBody                 *dag.AuthorizationServerBufferSettings
 	// HttpServerURI                string
 }
@@ -633,9 +633,9 @@ func httpGlobalExternalAuthConfig(config *GlobalExternalAuthConfig) *http.HttpFi
 			SNI:  config.ExtensionServiceConfig.SNI,
 		},
 		ServiceAPIType:                     config.ServiceAPIType,
-		HttpAllowedAuthorizationHeaders:    config.HttpAllowedAuthorizationHeaders,
-		HttpAllowedUpstreamHeaders:         config.HttpAllowedUpstreamHeaders,
-		HttpPathPrefix:                     config.HttpPathPrefix,
+		HTTPAllowedAuthorizationHeaders:    config.HTTPAllowedAuthorizationHeaders,
+		HTTPAllowedUpstreamHeaders:         config.HTTPAllowedUpstreamHeaders,
+		HTTPPathPrefix:                     config.HTTPPathPrefix,
 		AuthorizationFailOpen:              config.FailOpen,
 		AuthorizationResponseTimeout:       config.ExtensionServiceConfig.Timeout,
 		AuthorizationServerWithRequestBody: config.WithRequestBody,

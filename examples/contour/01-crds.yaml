@@ -632,8 +632,8 @@ spec:
                       authorization to Contour external authorization.
                     type: boolean
                   httpSettings:
-                    description: HttpAuthorizationServerSettings defines configurations
-                      for interacting with an external HTTP authorization server.
+                    description: HTTPServerSettings defines configurations for interacting
+                      with an external HTTP authorization server.
                     properties:
                       allowedAuthorizationHeaders:
                         description: AllowedAuthorizationHeaders specifies client
@@ -642,7 +642,7 @@ spec:
                           Host, Method, Path, Content-Length, and Authorization are
                           additionally included in the list.
                         items:
-                          description: HttpAuthorizationServerAllowedHeaders specifies
+                          description: HTTPAuthorizationServerAllowedHeaders specifies
                             how to conditionally match against allowed headers in
                             the context of HTTP authorization. It includes options
                             such as Exact, Prefix, Suffix, Contains, and IgnoreCase
@@ -679,7 +679,7 @@ spec:
                           response headers that will be added to the original client
                           request. Note that coexistent headers will be overridden.
                         items:
-                          description: HttpAuthorizationServerAllowedHeaders specifies
+                          description: HTTPAuthorizationServerAllowedHeaders specifies
                             how to conditionally match against allowed headers in
                             the context of HTTP authorization. It includes options
                             such as Exact, Prefix, Suffix, Contains, and IgnoreCase
@@ -4387,8 +4387,8 @@ spec:
                           from internal authorization to Contour external authorization.
                         type: boolean
                       httpSettings:
-                        description: HttpAuthorizationServerSettings defines configurations
-                          for interacting with an external HTTP authorization server.
+                        description: HTTPServerSettings defines configurations for
+                          interacting with an external HTTP authorization server.
                         properties:
                           allowedAuthorizationHeaders:
                             description: AllowedAuthorizationHeaders specifies client
@@ -4397,7 +4397,7 @@ spec:
                               matchers, Host, Method, Path, Content-Length, and Authorization
                               are additionally included in the list.
                             items:
-                              description: HttpAuthorizationServerAllowedHeaders specifies
+                              description: HTTPAuthorizationServerAllowedHeaders specifies
                                 how to conditionally match against allowed headers
                                 in the context of HTTP authorization. It includes
                                 options such as Exact, Prefix, Suffix, Contains, and
@@ -4436,7 +4436,7 @@ spec:
                               client request. Note that coexistent headers will be
                               overridden.
                             items:
-                              description: HttpAuthorizationServerAllowedHeaders specifies
+                              description: HTTPAuthorizationServerAllowedHeaders specifies
                                 how to conditionally match against allowed headers
                                 in the context of HTTP authorization. It includes
                                 options such as Exact, Prefix, Suffix, Contains, and
@@ -5083,9 +5083,9 @@ spec:
               resource.
             properties:
               loadBalancerPolicy:
-                description: The policy for load balancing GRPC service requests.
-                  Note that the `Cookie` and `RequestHash` load balancing strategies
-                  cannot be used here.
+                description: The policy for load balancing service requests. Note
+                  that the `Cookie` and `RequestHash` load balancing strategies cannot
+                  be used here for GRPC service requests.
                 properties:
                   requestHashPolicies:
                     description: RequestHashPolicies contains a list of hash policies
@@ -5151,10 +5151,10 @@ spec:
                 type: object
               protocol:
                 description: Protocol may be used to specify (or override) the protocol
-                  used to reach this Service. Values may be h2 or h2c. If omitted,
-                  protocol-selection falls back on Service annotations.
+                  used to reach this Service. Values may be h2, h2c or http/1.1. If
+                  omitted, protocol-selection falls back on Service annotations.
                 enum:
-                - h1
+                - http/1.1
                 - h2
                 - h2c
                 type: string
@@ -5168,7 +5168,7 @@ spec:
                 type: string
               services:
                 description: Services specifies the set of Kubernetes Service resources
-                  that receive GRPC extension API requests. If no weights are specified
+                  that receive extension API requests. If no weights are specified
                   for any of the entries in this array, traffic will be spread evenly
                   across all the services. Otherwise, traffic is balanced proportionally
                   to the Weight field in each entry.
@@ -7410,8 +7410,8 @@ spec:
                           from internal authorization to Contour external authorization.
                         type: boolean
                       httpSettings:
-                        description: HttpAuthorizationServerSettings defines configurations
-                          for interacting with an external HTTP authorization server.
+                        description: HTTPServerSettings defines configurations for
+                          interacting with an external HTTP authorization server.
                         properties:
                           allowedAuthorizationHeaders:
                             description: AllowedAuthorizationHeaders specifies client
@@ -7420,7 +7420,7 @@ spec:
                               matchers, Host, Method, Path, Content-Length, and Authorization
                               are additionally included in the list.
                             items:
-                              description: HttpAuthorizationServerAllowedHeaders specifies
+                              description: HTTPAuthorizationServerAllowedHeaders specifies
                                 how to conditionally match against allowed headers
                                 in the context of HTTP authorization. It includes
                                 options such as Exact, Prefix, Suffix, Contains, and
@@ -7459,7 +7459,7 @@ spec:
                               client request. Note that coexistent headers will be
                               overridden.
                             items:
-                              description: HttpAuthorizationServerAllowedHeaders specifies
+                              description: HTTPAuthorizationServerAllowedHeaders specifies
                                 how to conditionally match against allowed headers
                                 in the context of HTTP authorization. It includes
                                 options such as Exact, Prefix, Suffix, Contains, and

@@ -76,7 +76,7 @@ func extBasic(t *testing.T, rh ResourceEventHandlerWrapper, c *Contour) {
 }
 
 func extCleartext(t *testing.T, rh ResourceEventHandlerWrapper, c *Contour) {
-	rh.OnAdd(&v1alpha1.ExtensionService{
+	es := &v1alpha1.ExtensionService{
 		ObjectMeta: fixture.ObjectMeta("ns/ext"),
 		Spec: v1alpha1.ExtensionServiceSpec{
 			Protocol: ref.To("h2c"),
@@ -85,7 +85,9 @@ func extCleartext(t *testing.T, rh ResourceEventHandlerWrapper, c *Contour) {
 				{Name: "svc2", Port: 8082},
 			},
 		},
-	})
+	}
+
+	rh.OnAdd(es)
 
 	c.Request(clusterType).Equals(&envoy_discovery_v3.DiscoveryResponse{
 		TypeUrl: clusterType,
@@ -95,6 +97,21 @@ func extCleartext(t *testing.T, rh ResourceEventHandlerWrapper, c *Contour) {
 			),
 		),
 	})
+
+	es.Spec.Protocol = ref.To("http/1.1")
+
+	rh.OnDelete(es)
+	rh.OnAdd(es)
+
+	c.Request(clusterType).Equals(&envoy_discovery_v3.DiscoveryResponse{
+		TypeUrl: clusterType,
+		Resources: resources(t,
+			DefaultCluster(
+				http1Cluster(cluster("extension/ns/ext", "extension/ns/ext", "extension_ns_ext")),
+			),
+		),
+	})
+
 }
 
 func extUpstreamValidation(t *testing.T, rh ResourceEventHandlerWrapper, c *Contour) {
@@ -317,7 +334,7 @@ func extInvalidTimeout(_ *testing.T, rh ResourceEventHandlerWrapper, c *Contour)
 }
 
 func extInconsistentProto(_ *testing.T, rh ResourceEventHandlerWrapper, c *Contour) {
-	rh.OnAdd(&v1alpha1.ExtensionService{
+	es := &v1alpha1.ExtensionService{
 		ObjectMeta: fixture.ObjectMeta("ns/ext"),
 		Spec: v1alpha1.ExtensionServiceSpec{
 			Services: []v1alpha1.ExtensionServiceTarget{
@@ -329,7 +346,19 @@ func extInconsistentProto(_ *testing.T, rh ResourceEventHandlerWrapper, c *Conto
 				SubjectName:   "ext.projectcontour.io",
 			},
 		},
+	}
+
+	rh.OnAdd(es)
+
+	// Should have no clusters because Protocol and UpstreamValidation is inconsistent.
+	c.Request(clusterType).Equals(&envoy_discovery_v3.DiscoveryResponse{
+		TypeUrl: clusterType,
 	})
+
+	es.Spec.Protocol = ref.To("h1")
+
+	rh.OnDelete(es)
+	rh.OnAdd(es)
 
 	// Should have no clusters because Protocol and UpstreamValidation is inconsistent.
 	c.Request(clusterType).Equals(&envoy_discovery_v3.DiscoveryResponse{

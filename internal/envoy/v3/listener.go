@@ -779,7 +779,7 @@ end
 }
 
 // ExternalAuthzAllowedHeaders returns the slice of StringMatcher for a given slice of HttpAuthorizationServerAllowedHeaders.
-func ExternalAuthzAllowedHeaders(allowedHeaders []contour_api_v1.HttpAuthorizationServerAllowedHeaders) []*envoy_matcher.StringMatcher {
+func ExternalAuthzAllowedHeaders(allowedHeaders []contour_api_v1.HTTPAuthorizationServerAllowedHeaders) []*envoy_matcher.StringMatcher {
 	var allowedHeaderPatterns []*envoy_matcher.StringMatcher
 
 	for _, allowedHeader := range allowedHeaders {
@@ -868,20 +868,20 @@ func FilterExternalAuthz(externalAuthorization *dag.ExternalAuthorization) *http
 			},
 		}
 
-		if pathPrefix := externalAuthorization.HttpPathPrefix; pathPrefix != "" {
-			extAuthzService.HttpService.PathPrefix = pathPrefix
+		if externalAuthorization.HTTPPathPrefix != "" {
+			extAuthzService.HttpService.PathPrefix = externalAuthorization.HTTPPathPrefix
 		}
 
-		if len(externalAuthorization.HttpAllowedAuthorizationHeaders) > 0 {
+		if len(externalAuthorization.HTTPAllowedAuthorizationHeaders) > 0 {
 			authConfig.AllowedHeaders = &envoy_matcher.ListStringMatcher{
-				Patterns: ExternalAuthzAllowedHeaders(externalAuthorization.HttpAllowedAuthorizationHeaders),
+				Patterns: ExternalAuthzAllowedHeaders(externalAuthorization.HTTPAllowedAuthorizationHeaders),
 			}
 		}
 
-		if len(externalAuthorization.HttpAllowedUpstreamHeaders) > 0 {
+		if len(externalAuthorization.HTTPAllowedUpstreamHeaders) > 0 {
 			extAuthzService.HttpService.AuthorizationResponse = &envoy_config_filter_http_ext_authz_v3.AuthorizationResponse{
 				AllowedUpstreamHeaders: &envoy_matcher.ListStringMatcher{
-					Patterns: ExternalAuthzAllowedHeaders(externalAuthorization.HttpAllowedUpstreamHeaders),
+					Patterns: ExternalAuthzAllowedHeaders(externalAuthorization.HTTPAllowedUpstreamHeaders),
 				},
 			}
 		}

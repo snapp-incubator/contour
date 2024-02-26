@@ -861,10 +861,6 @@ func (s *Server) setupGlobalExternalAuthentication(contourConfiguration contour_
 		context = contourConfiguration.GlobalExternalAuthorization.AuthPolicy.Context
 	}
 
-	if contourConfiguration.GlobalExternalAuthorization.ServiceAPIType == contour_api_v1.AuthorizationHTTPService && contourConfiguration.GlobalExternalAuthorization.HttpServerSettings == nil {
-		return nil, fmt.Errorf("Spec.globalExtAuth.HttpServerSettings is not set and it is required for http type")
-	}
-
 	// Not required due to Kubernetes API server validation.
 	//
 	// if auth.ServiceAPIType == contour_api_v1.AuthorizationHTTPService && auth.HttpServerSettings.ServerURI == "" {
@@ -885,24 +881,28 @@ func (s *Server) setupGlobalExternalAuthentication(contourConfiguration contour_
 		globalExternalAuthConfig.ServiceAPIType = contour_api_v1.AuthorizationGRPCService
 	case contour_api_v1.AuthorizationHTTPService:
 		globalExternalAuthConfig.ServiceAPIType = contour_api_v1.AuthorizationHTTPService
-		globalExternalAuthConfig.HttpPathPrefix = contourConfiguration.GlobalExternalAuthorization.HttpServerSettings.PathPrefix
-		// globalExternalAuthConfig.HttpServerURI = contourConfiguration.GlobalExternalAuthorization.HttpServerSettings.ServerURI
 
-		if contourConfiguration.GlobalExternalAuthorization.HttpServerSettings.AllowedAuthorizationHeaders != nil {
-			if err := dag.ExternalAuthAllowedHeadersValid(contourConfiguration.GlobalExternalAuthorization.HttpServerSettings.AllowedAuthorizationHeaders); err != nil {
-				return nil, err
+		if contourConfiguration.GlobalExternalAuthorization.HTTPServerSettings != nil {
+			globalExternalAuthConfig.HTTPPathPrefix = contourConfiguration.GlobalExternalAuthorization.HTTPServerSettings.PathPrefix
+
+			// globalExternalAuthConfig.HttpServerURI = contourConfiguration.GlobalExternalAuthorization.HttpServerSettings.ServerURI
+
+			if len(contourConfiguration.GlobalExternalAuthorization.HTTPServerSettings.AllowedAuthorizationHeaders) > 0 {
+				if err := dag.ExternalAuthAllowedHeadersValid(contourConfiguration.GlobalExternalAuthorization.HTTPServerSettings.AllowedAuthorizationHeaders); err != nil {
+					return nil, err
+				}
+
+				globalExternalAuthConfig.HTTPAllowedAuthorizationHeaders = contourConfiguration.GlobalExternalAuthorization.HTTPServerSettings.AllowedAuthorizationHeaders
 			}
 
-			globalExternalAuthConfig.HttpAllowedAuthorizationHeaders = contourConfiguration.GlobalExternalAuthorization.HttpServerSettings.AllowedAuthorizationHeaders
-		}
+			if len(contourConfiguration.GlobalExternalAuthorization.HTTPServerSettings.AllowedUpstreamHeaders) > 0 {
+				if err := dag.ExternalAuthAllowedHeadersValid(contourConfiguration.GlobalExternalAuthorization.HTTPServerSettings.AllowedUpstreamHeaders); err != nil {
 
-		if contourConfiguration.GlobalExternalAuthorization.HttpServerSettings.AllowedUpstreamHeaders != nil {
-			if err := dag.ExternalAuthAllowedHeadersValid(contourConfiguration.GlobalExternalAuthorization.HttpServerSettings.AllowedUpstreamHeaders); err != nil {
+					return nil, err
+				}
 
-				return nil, err
+				globalExternalAuthConfig.HTTPAllowedUpstreamHeaders = contourConfiguration.GlobalExternalAuthorization.HTTPServerSettings.AllowedUpstreamHeaders
 			}
-
-			globalExternalAuthConfig.HttpAllowedUpstreamHeaders = contourConfiguration.GlobalExternalAuthorization.HttpServerSettings.AllowedUpstreamHeaders
 		}
 	}
 

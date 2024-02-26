@@ -411,6 +411,7 @@ func globalExternalAuthorizationWithTLSAuthOverride(t *testing.T, rh ResourceEve
 						Namespace: "auth",
 						Name:      "extension",
 					},
+					ServiceAPIType:  contour_api_v1.AuthorizationGRPCService,
 					ResponseTimeout: defaultResponseTimeout.String(),
 					FailOpen:        true,
 					WithRequestBody: &contour_api_v1.AuthorizationServerBufferSettings{
@@ -511,7 +512,8 @@ func TestGlobalAuthorization(t *testing.T) {
 							ExtensionService: k8s.NamespacedNameFrom("auth/extension"),
 							Timeout:          timeout.DurationSetting(defaultResponseTimeout),
 						},
-						FailOpen: false,
+						ServiceAPIType: contour_api_v1.AuthorizationGRPCService,
+						FailOpen:       false,
 						Context: map[string]string{
 							"header_type": "root_config",
 							"header_1":    "message_1",
@@ -526,6 +528,7 @@ func TestGlobalAuthorization(t *testing.T) {
 									Name:      "extension",
 									Namespace: "auth",
 								},
+								ServiceAPIType:  contour_api_v1.AuthorizationGRPCService,
 								FailOpen:        false,
 								ResponseTimeout: defaultResponseTimeout.String(),
 								AuthPolicy: &contour_api_v1.AuthorizationPolicy{
