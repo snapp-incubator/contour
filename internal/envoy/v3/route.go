@@ -113,6 +113,10 @@ func buildRoute(dagRoute *dag.Route, vhostName string, secure bool) *envoy_route
 	route := &envoy_route_v3.Route{
 		Match:    RouteMatch(dagRoute),
 		Metadata: getRouteMetadata(dagRoute),
+		Decorator: &envoy_route_v3.Decorator{
+			Operation: dagRoute.TracingOperationName,
+			Propagate: wrapperspb.Bool(true),
+		},
 	}
 
 	if dagRoute.StatPrefix != nil {

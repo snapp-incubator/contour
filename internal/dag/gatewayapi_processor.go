@@ -2186,6 +2186,8 @@ func (p *GatewayAPIProcessor) clusterRoutes(
 			route.StatPrefix = ref.To(fmt.Sprintf("%s_%s", namespace, name))
 		}
 
+		route.TracingOperationName = mc.path.String()
+
 		routes = append(routes, route)
 	}
 
@@ -2257,6 +2259,8 @@ func (p *GatewayAPIProcessor) redirectRoutes(
 		if p.EnableStatPrefix {
 			route.StatPrefix = ref.To(fmt.Sprintf("%s_%s", namespace, name))
 		}
+
+		route.TracingOperationName = mc.path.String()
 
 		routes = append(routes, route)
 	}

@@ -378,6 +378,10 @@ type Route struct {
 
 	// The stat_prefix to set on envoy route
 	StatPrefix *string
+
+	// The operation name of tracing spans reported for this request
+	// Check https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/route/v3/route_components.proto#envoy-v3-api-msg-config-route-v3-decorator
+	TracingOperationName string
 }
 
 // HasPathPrefix returns whether this route has a PrefixPathCondition.
