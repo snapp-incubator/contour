@@ -58,6 +58,7 @@ func TracingConfig(tracing *EnvoyTracingConfig) *http.HttpConnectionManager_Trac
 			Name: "envoy.tracers.zipkin",
 			ConfigType: &envoy_config_trace_v3.Tracing_Http_TypedConfig{
 				TypedConfig: protobuf.MustMarshalAny(&envoy_config_trace_v3.ZipkinConfig{
+					TraceId_128Bit:           true,
 					CollectorCluster:         dag.ExtensionClusterName(tracing.ExtensionService),
 					CollectorEndpoint:        "/api/v2/spans",
 					SharedSpanContext:        wrapperspb.Bool(false),
