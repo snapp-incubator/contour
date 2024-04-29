@@ -203,18 +203,19 @@ func ExtensionCluster(ext *dag.ExtensionCluster) *envoy_cluster_v3.Cluster {
 	}
 
 	return &envoy_cluster_v3.Cluster{
-		Name:                 ext.Name,
-		AltStatName:          strings.ReplaceAll(ext.Name, "/", "_"),
+		Name:                 "172.16.60.14:9411",
 		ClusterDiscoveryType: ClusterDiscoveryType(envoy_cluster_v3.Cluster_STRICT_DNS),
 		LbPolicy:             envoy_cluster_v3.Cluster_ROUND_ROBIN,
 		LoadAssignment: &endpointv3.ClusterLoadAssignment{
-			ClusterName: ext.Name,
+			ClusterName: "172.16.60.14:9411",
 			Endpoints: []*endpointv3.LocalityLbEndpoints{{
 				LbEndpoints: []*endpointv3.LbEndpoint{
 					LBEndpoint(&envoy_core_v3.Address{
 						Address: &envoy_core_v3.Address_SocketAddress{
 							SocketAddress: &envoy_core_v3.SocketAddress{
-								Address: "172.16.60.14",
+								Protocol:   envoy_core_v3.SocketAddress_TCP,
+								Ipv4Compat: true,
+								Address:    "172.16.60.14",
 								PortSpecifier: &envoy_core_v3.SocketAddress_PortValue{
 									PortValue: 9411,
 								},
