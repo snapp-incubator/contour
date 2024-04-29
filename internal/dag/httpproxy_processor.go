@@ -865,7 +865,7 @@ func (p *HTTPProxyProcessor) computeRoutes(
 
 		r.TracingOperationName = "/"
 		if len(route.Conditions) > 0 && route.Conditions[0].Prefix != "" {
-			r.TracingOperationName = strings.TrimPrefix(route.Conditions[0].Prefix, "/")
+			r.TracingOperationName = route.Conditions[0].Prefix
 		}
 
 		// If the enclosing root proxy enabled authorization,

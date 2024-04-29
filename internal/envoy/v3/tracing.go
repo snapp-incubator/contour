@@ -45,12 +45,23 @@ func TracingConfig(tracing *EnvoyTracingConfig) *http.HttpConnectionManager_Trac
 		},
 		MaxPathTagLength: wrapperspb.UInt32(tracing.MaxPathTagLength),
 		CustomTags:       customTags,
+		//Provider: &envoy_config_trace_v3.Tracing_Http{
+		//	Name: "envoy.tracers.opentelemetry",
+		//	ConfigType: &envoy_config_trace_v3.Tracing_Http_TypedConfig{
+		//		TypedConfig: protobuf.MustMarshalAny(&envoy_config_trace_v3.OpenTelemetryConfig{
+		//			GrpcService: GrpcService(dag.ExtensionClusterName(tracing.ExtensionService), tracing.SNI, tracing.Timeout),
+		//			ServiceName: tracing.ServiceName,
+		//		}),
+		//	},
+		//},
 		Provider: &envoy_config_trace_v3.Tracing_Http{
-			Name: "envoy.tracers.opentelemetry",
+			Name: "envoy.tracers.zipkin",
 			ConfigType: &envoy_config_trace_v3.Tracing_Http_TypedConfig{
-				TypedConfig: protobuf.MustMarshalAny(&envoy_config_trace_v3.OpenTelemetryConfig{
-					GrpcService: GrpcService(dag.ExtensionClusterName(tracing.ExtensionService), tracing.SNI, tracing.Timeout),
-					ServiceName: tracing.ServiceName,
+				TypedConfig: protobuf.MustMarshalAny(&envoy_config_trace_v3.ZipkinConfig{
+					CollectorCluster:         dag.ExtensionClusterName(tracing.ExtensionService),
+					CollectorEndpoint:        "/api/v2/spans",
+					SharedSpanContext:        wrapperspb.Bool(false),
+					CollectorEndpointVersion: envoy_config_trace_v3.ZipkinConfig_HTTP_JSON,
 				}),
 			},
 		},
