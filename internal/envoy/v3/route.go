@@ -114,7 +114,6 @@ func buildRoute(dagRoute *dag.Route, vhostName string, secure bool) *envoy_route
 		Match:    RouteMatch(dagRoute),
 		Metadata: getRouteMetadata(dagRoute),
 		Decorator: &envoy_route_v3.Decorator{
-			//Operation: dagRoute.TracingOperationName,
 			Operation: dagRoute.Name,
 			Propagate: wrapperspb.Bool(true),
 		},

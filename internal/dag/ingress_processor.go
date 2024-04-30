@@ -320,8 +320,6 @@ func (p *IngressProcessor) route(ingress *networking_v1.Ingress, host string, pa
 		r.StatPrefix = ref.To(fmt.Sprintf("%s_%s", ingress.Namespace, ingress.Name))
 	}
 
-	r.TracingOperationName = path
-
 	switch pathType {
 	case networking_v1.PathTypePrefix:
 		prefixMatchType := PrefixMatchSegment

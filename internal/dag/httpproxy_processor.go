@@ -863,11 +863,6 @@ func (p *HTTPProxyProcessor) computeRoutes(
 			r.StatPrefix = ref.To(fmt.Sprintf("%s_httpproxy_%s_path_%s", proxy.Namespace, proxy.Name, path))
 		}
 
-		r.TracingOperationName = "/"
-		if len(route.Conditions) > 0 && route.Conditions[0].Prefix != "" {
-			r.TracingOperationName = route.Conditions[0].Prefix
-		}
-
 		// If the enclosing root proxy enabled authorization,
 		// enable it on the route and propagate defaults
 		// downwards.
