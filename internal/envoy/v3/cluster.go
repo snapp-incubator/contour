@@ -30,8 +30,8 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 	"k8s.io/apimachinery/pkg/types"
-	endpointv3 "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
 	"strings"
+	endpointv3 "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
 )
 
 func clusterDefaults() *envoy_cluster_v3.Cluster {
@@ -201,13 +201,18 @@ func ExtensionCluster(ext *dag.ExtensionCluster) *envoy_cluster_v3.Cluster {
 	if !strings.Contains(ext.Name, "zipkin") {
 		return cluster
 	}
+	//else {
+	//	cluster.Name = "172.16.60.14:9411"
+	//	cluster.EdsClusterConfig.ServiceName = "172.16.60.14:9411"
+	//	return cluster
+	//}
 
 	return &envoy_cluster_v3.Cluster{
-		Name:                 "172.16.60.14:9411",
+		Name:                 ext.Name,
 		ClusterDiscoveryType: ClusterDiscoveryType(envoy_cluster_v3.Cluster_STRICT_DNS),
 		LbPolicy:             envoy_cluster_v3.Cluster_ROUND_ROBIN,
 		LoadAssignment: &endpointv3.ClusterLoadAssignment{
-			ClusterName: "172.16.60.14:9411",
+			ClusterName: ext.Name,
 			Endpoints: []*endpointv3.LocalityLbEndpoints{{
 				LbEndpoints: []*endpointv3.LbEndpoint{
 					LBEndpoint(&envoy_core_v3.Address{
