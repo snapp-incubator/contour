@@ -114,6 +114,11 @@ func buildRoute(dagRoute *dag.Route, vhostName string, secure bool) *envoy_route
 		Match:    RouteMatch(dagRoute),
 		Metadata: getRouteMetadata(dagRoute),
 	}
+	if dagRoute.Name != "" {
+		route.Decorator = &envoy_route_v3.Decorator{
+			Operation: dagRoute.Name,
+		}
+	}
 
 	if dagRoute.StatPrefix != nil {
 		route.StatPrefix = *dagRoute.StatPrefix

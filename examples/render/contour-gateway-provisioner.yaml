@@ -1098,7 +1098,7 @@ spec:
                 type: object
               tracing:
                 description: Tracing defines properties for exporting trace data to
-                  OpenTelemetry.
+                  the tracing system.
                 properties:
                   customTags:
                     description: CustomTags defines a list of custom tags with unique
@@ -1155,6 +1155,11 @@ spec:
                   serviceName:
                     description: ServiceName defines the name for the service. contour's
                       default is contour.
+                    type: string
+                  system:
+                    description: System specifies the tracing system used in Evnoy.
+                      Supported systems are "opentelemetry" and "zipkin". Defaults
+                      to "opentelemetry".
                     type: string
                 required:
                 - extensionService
@@ -4867,7 +4872,7 @@ spec:
                     type: object
                   tracing:
                     description: Tracing defines properties for exporting trace data
-                      to OpenTelemetry.
+                      to the tracing system.
                     properties:
                       customTags:
                         description: CustomTags defines a list of custom tags with
@@ -4925,6 +4930,11 @@ spec:
                       serviceName:
                         description: ServiceName defines the name for the service.
                           contour's default is contour.
+                        type: string
+                      system:
+                        description: System specifies the tracing system used in Evnoy.
+                          Supported systems are "opentelemetry" and "zipkin". Defaults
+                          to "opentelemetry".
                         type: string
                     required:
                     - extensionService
