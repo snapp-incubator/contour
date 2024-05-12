@@ -1,9 +1,11 @@
-name: Build and push :main image
+name: Build and push image
 
 on:
   push:
-    branches:
-    - main
+    branches: [ snappcloud ]
+    tags: [ v* ]
+  pull_request:
+    branches: [ snappcloud ]
 
 permissions:
   contents: read
@@ -32,15 +34,9 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build and Push to GHCR
       env:
-        REGISTRY: ghcr.io/${{ github.repository_owner }}
-        VERSION: main
+        REGISTRY: ghcr.io/${{ github.repository }}
+        #VERSION: snappcloud
         TAG_LATEST: "false"
         PUSH_IMAGE: "true"
       run: |
         make multiarch-build
-    - uses: act10ns/slack@44541246747a30eb3102d87f7a4cc5471b0ffb7d # v2.1.0
-      with:
-        status: ${{ job.status }}
-        steps: ${{ toJson(steps) }}
-        channel: '#contour-ci-notifications'
-      if: failure()

@@ -389,6 +389,17 @@ func (ctx *serveContext) convertToContourConfigurationSpec() contour_v1alpha1.Co
 				RequestHeaderName: customTag.RequestHeaderName,
 			})
 		}
+
+		var tracingSystem *contour_api_v1alpha1.TracingSystem
+		if ctx.Config.Tracing.System != nil {
+			switch *ctx.Config.Tracing.System {
+			case config.TracingSystemOpenTelemetry:
+				tracingSystem = ref.To(contour_api_v1alpha1.TracingSystemOpenTelemetry)
+			case config.TracingSystemZipkin:
+				tracingSystem = ref.To(contour_api_v1alpha1.TracingSystemZipkin)
+			}
+		}
+
 		tracingConfig = &contour_v1alpha1.TracingConfig{
 			IncludePodDetail: ctx.Config.Tracing.IncludePodDetail,
 			ServiceName:      ctx.Config.Tracing.ServiceName,
@@ -399,6 +410,7 @@ func (ctx *serveContext) convertToContourConfigurationSpec() contour_v1alpha1.Co
 				Name:      namespacedName.Name,
 				Namespace: namespacedName.Namespace,
 			},
+			System: tracingSystem,
 		}
 	}
 
@@ -437,8 +449,13 @@ func (ctx *serveContext) convertToContourConfigurationSpec() contour_v1alpha1.Co
 				Name:      nsedName.Name,
 				Namespace: nsedName.Namespace,
 			},
+			ServiceAPIType:  ctx.Config.GlobalExternalAuthorization.ServiceAPIType,
 			ResponseTimeout: ctx.Config.GlobalExternalAuthorization.ResponseTimeout,
 			FailOpen:        ctx.Config.GlobalExternalAuthorization.FailOpen,
+		}
+
+		if ctx.Config.GlobalExternalAuthorization.HTTPServerSettings != nil {
+			globalExtAuth.HTTPServerSettings = ctx.Config.GlobalExternalAuthorization.HTTPServerSettings
 		}
 
 		if ctx.Config.GlobalExternalAuthorization.AuthPolicy != nil {
