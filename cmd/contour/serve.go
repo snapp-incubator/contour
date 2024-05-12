@@ -566,6 +566,7 @@ func (s *Server) doServe() error {
 		globalRateLimitService:             contourConfiguration.RateLimitService,
 		maxRequestsPerConnection:           contourConfiguration.Envoy.Cluster.MaxRequestsPerConnection,
 		perConnectionBufferLimitBytes:      contourConfiguration.Envoy.Cluster.PerConnectionBufferLimitBytes,
+		enableStatPrefix:                   *contourConfiguration.Envoy.EnableStatPrefix,
 		globalCircuitBreakerDefaults:       contourConfiguration.Envoy.Cluster.GlobalCircuitBreakerDefaults,
 		upstreamTLS: &dag.UpstreamTLS{
 			MinimumProtocolVersion: annotation.TLSVersion(contourConfiguration.Envoy.Cluster.UpstreamTLS.MinimumProtocolVersion, "1.2"),
@@ -805,6 +806,7 @@ func (s *Server) setupTracingService(tracingConfig *contour_v1alpha1.TracingConf
 		RandomSampling:         randomSampling,
 		MaxPathTagLength:       ptr.Deref(tracingConfig.MaxPathTagLength, 256),
 		CustomTags:             customTags,
+		System:                 ref.Val(tracingConfig.System, contour_api_v1alpha1.TracingSystemOpenTelemetry),
 	}, nil
 }
 
@@ -849,6 +851,36 @@ func (s *Server) setupGlobalExternalAuthentication(contourConfiguration contour_
 		ExtensionServiceConfig: extensionSvcConfig,
 		FailOpen:               contourConfiguration.GlobalExternalAuthorization.FailOpen,
 		Context:                context,
+	}
+
+	switch contourConfiguration.GlobalExternalAuthorization.ServiceAPIType {
+	case contour_api_v1.AuthorizationGRPCService:
+		globalExternalAuthConfig.ServiceAPIType = contour_api_v1.AuthorizationGRPCService
+	case contour_api_v1.AuthorizationHTTPService:
+		globalExternalAuthConfig.ServiceAPIType = contour_api_v1.AuthorizationHTTPService
+
+		if contourConfiguration.GlobalExternalAuthorization.HTTPServerSettings != nil {
+			globalExternalAuthConfig.HTTPPathPrefix = contourConfiguration.GlobalExternalAuthorization.HTTPServerSettings.PathPrefix
+
+			// globalExternalAuthConfig.HttpServerURI = contourConfiguration.GlobalExternalAuthorization.HttpServerSettings.ServerURI
+
+			if len(contourConfiguration.GlobalExternalAuthorization.HTTPServerSettings.AllowedAuthorizationHeaders) > 0 {
+				if err := dag.ExternalAuthAllowedHeadersValid(contourConfiguration.GlobalExternalAuthorization.HTTPServerSettings.AllowedAuthorizationHeaders); err != nil {
+					return nil, err
+				}
+
+				globalExternalAuthConfig.HTTPAllowedAuthorizationHeaders = contourConfiguration.GlobalExternalAuthorization.HTTPServerSettings.AllowedAuthorizationHeaders
+			}
+
+			if len(contourConfiguration.GlobalExternalAuthorization.HTTPServerSettings.AllowedUpstreamHeaders) > 0 {
+				if err := dag.ExternalAuthAllowedHeadersValid(contourConfiguration.GlobalExternalAuthorization.HTTPServerSettings.AllowedUpstreamHeaders); err != nil {
+
+					return nil, err
+				}
+
+				globalExternalAuthConfig.HTTPAllowedUpstreamHeaders = contourConfiguration.GlobalExternalAuthorization.HTTPServerSettings.AllowedUpstreamHeaders
+			}
+		}
 	}
 
 	if contourConfiguration.GlobalExternalAuthorization.WithRequestBody != nil {
@@ -1032,6 +1064,7 @@ type dagBuilderConfig struct {
 	perConnectionBufferLimitBytes      *uint32
 	globalRateLimitService             *contour_v1alpha1.RateLimitServiceConfig
 	globalCircuitBreakerDefaults       *contour_v1alpha1.CircuitBreakers
+	enableStatPrefix                   bool
 	upstreamTLS                        *dag.UpstreamTLS
 }
 
@@ -1099,6 +1132,7 @@ func (s *Server) getDAGBuilder(dbc dagBuilderConfig) *dag.Builder {
 			PerConnectionBufferLimitBytes: dbc.perConnectionBufferLimitBytes,
 			GlobalCircuitBreakerDefaults:  dbc.globalCircuitBreakerDefaults,
 			SetSourceMetadataOnRoutes:     true,
+			EnableStatPrefix:              dbc.enableStatPrefix,
 			UpstreamTLS:                   dbc.upstreamTLS,
 		},
 		&dag.ExtensionServiceProcessor{
@@ -1123,6 +1157,7 @@ func (s *Server) getDAGBuilder(dbc dagBuilderConfig) *dag.Builder {
 			GlobalRateLimitService:        dbc.globalRateLimitService,
 			PerConnectionBufferLimitBytes: dbc.perConnectionBufferLimitBytes,
 			SetSourceMetadataOnRoutes:     true,
+			EnableStatPrefix:              dbc.enableStatPrefix,
 			GlobalCircuitBreakerDefaults:  dbc.globalCircuitBreakerDefaults,
 			UpstreamTLS:                   dbc.upstreamTLS,
 		},
@@ -1136,6 +1171,7 @@ func (s *Server) getDAGBuilder(dbc dagBuilderConfig) *dag.Builder {
 			MaxRequestsPerConnection:      dbc.maxRequestsPerConnection,
 			PerConnectionBufferLimitBytes: dbc.perConnectionBufferLimitBytes,
 			SetSourceMetadataOnRoutes:     true,
+			EnableStatPrefix:              dbc.enableStatPrefix,
 			GlobalCircuitBreakerDefaults:  dbc.globalCircuitBreakerDefaults,
 			UpstreamTLS:                   dbc.upstreamTLS,
 		})
