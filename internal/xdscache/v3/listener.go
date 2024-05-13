@@ -14,6 +14,7 @@
 package v3
 
 import (
+	contour_v1 "github.com/projectcontour/contour/apis/projectcontour/v1"
 	"sort"
 	"sync"
 
@@ -178,6 +179,8 @@ type TracingConfig struct {
 	MaxPathTagLength uint32
 
 	CustomTags []*CustomTag
+
+	System contour_v1alpha1.TracingSystem
 }
 
 type CustomTag struct {
@@ -206,9 +209,13 @@ type RateLimitConfig struct {
 
 type GlobalExternalAuthConfig struct {
 	ExtensionServiceConfig
-	FailOpen        bool
-	Context         map[string]string
-	WithRequestBody *dag.AuthorizationServerBufferSettings
+	FailOpen                        bool
+	Context                         map[string]string
+	ServiceAPIType                  contour_v1.AuthorizationServiceAPIType
+	HTTPAllowedAuthorizationHeaders []contour_v1.HTTPAuthorizationServerAllowedHeaders
+	HTTPAllowedUpstreamHeaders      []contour_v1.HTTPAuthorizationServerAllowedHeaders
+	HTTPPathPrefix                  string
+	WithRequestBody                 *dag.AuthorizationServerBufferSettings
 }
 
 // httpAccessLog returns the access log for the HTTP (non TLS)
@@ -484,7 +491,11 @@ func (c *ListenerCache) OnChange(root *dag.DAG) {
 
 				filters = envoy_v3.Filters(cm)
 
-				alpnProtos = envoy_v3.ProtoNamesForVersions(cfg.DefaultHTTPVersions...)
+				if len(vh.HTTPVersions) != 0 {
+					alpnProtos = vh.HTTPVersions
+				} else {
+					alpnProtos = envoy_v3.ProtoNamesForVersions(cfg.DefaultHTTPVersions...)
+				}
 			} else {
 				filters = envoy_v3.Filters(envoy_v3.TCPProxy(listener.Name, vh.TCPProxy, cfg.newSecureAccessLog()))
 
@@ -608,6 +619,10 @@ func httpGlobalExternalAuthConfig(config *GlobalExternalAuthConfig) *envoy_filte
 			Name: dag.ExtensionClusterName(config.ExtensionService),
 			SNI:  config.SNI,
 		},
+		ServiceAPIType:                     config.ServiceAPIType,
+		HTTPAllowedAuthorizationHeaders:    config.HTTPAllowedAuthorizationHeaders,
+		HTTPAllowedUpstreamHeaders:         config.HTTPAllowedUpstreamHeaders,
+		HTTPPathPrefix:                     config.HTTPPathPrefix,
 		AuthorizationFailOpen:              config.FailOpen,
 		AuthorizationResponseTimeout:       config.Timeout,
 		AuthorizationServerWithRequestBody: config.WithRequestBody,
@@ -645,6 +660,7 @@ func envoyTracingConfig(config *TracingConfig) *envoy_v3.EnvoyTracingConfig {
 		RandomSampling:   config.RandomSampling,
 		MaxPathTagLength: config.MaxPathTagLength,
 		CustomTags:       envoyTracingConfigCustomTag(config.CustomTags),
+		System:           config.System,
 	}
 }
 

@@ -18,8 +18,10 @@ import (
 	envoy_filter_network_http_connection_manager_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	envoy_trace_v3 "github.com/envoyproxy/go-control-plane/envoy/type/tracing/v3"
 	envoy_type_v3 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
+	contour_v1alpha1 "github.com/projectcontour/contour/apis/projectcontour/v1alpha1"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 	"k8s.io/apimachinery/pkg/types"
+	"strings"
 
 	"github.com/projectcontour/contour/internal/dag"
 	"github.com/projectcontour/contour/internal/protobuf"
@@ -40,7 +42,7 @@ func TracingConfig(tracing *EnvoyTracingConfig) *envoy_filter_network_http_conne
 		}
 	}
 
-	return &envoy_filter_network_http_connection_manager_v3.HttpConnectionManager_Tracing{
+	connManagerTracing := &envoy_filter_network_http_connection_manager_v3.HttpConnectionManager_Tracing{
 		OverallSampling: &envoy_type_v3.Percent{
 			Value: tracing.OverallSampling,
 		},
@@ -50,9 +52,14 @@ func TracingConfig(tracing *EnvoyTracingConfig) *envoy_filter_network_http_conne
 		RandomSampling: &envoy_type_v3.Percent{
 			Value: tracing.RandomSampling,
 		},
-		MaxPathTagLength: wrapperspb.UInt32(tracing.MaxPathTagLength),
-		CustomTags:       customTags,
-		Provider: &envoy_config_trace_v3.Tracing_Http{
+		MaxPathTagLength:  wrapperspb.UInt32(tracing.MaxPathTagLength),
+		CustomTags:        customTags,
+		SpawnUpstreamSpan: wrapperspb.Bool(true),
+	}
+
+	switch tracing.System {
+	case contour_v1alpha1.TracingSystemOpenTelemetry:
+		connManagerTracing.Provider = &envoy_config_trace_v3.Tracing_Http{
 			Name: "envoy.tracers.opentelemetry",
 			ConfigType: &envoy_config_trace_v3.Tracing_Http_TypedConfig{
 				TypedConfig: protobuf.MustMarshalAny(&envoy_config_trace_v3.OpenTelemetryConfig{
@@ -60,9 +67,23 @@ func TracingConfig(tracing *EnvoyTracingConfig) *envoy_filter_network_http_conne
 					ServiceName: tracing.ServiceName,
 				}),
 			},
-		},
-		SpawnUpstreamSpan: wrapperspb.Bool(true),
+		}
+	case contour_v1alpha1.TracingSystemZipkin:
+		connManagerTracing.Provider = &envoy_config_trace_v3.Tracing_Http{
+			Name: "envoy.tracers.zipkin",
+			ConfigType: &envoy_config_trace_v3.Tracing_Http_TypedConfig{
+				TypedConfig: protobuf.MustMarshalAny(&envoy_config_trace_v3.ZipkinConfig{
+					CollectorCluster:         dag.ExtensionClusterName(tracing.ExtensionService),
+					CollectorHostname:        strings.ReplaceAll(dag.ExtensionClusterName(tracing.ExtensionService), "/", "."),
+					CollectorEndpoint:        "/api/v2/spans",
+					SharedSpanContext:        wrapperspb.Bool(false),
+					CollectorEndpointVersion: envoy_config_trace_v3.ZipkinConfig_HTTP_JSON,
+				}),
+			},
+		}
 	}
+
+	return connManagerTracing
 }
 
 func customTag(tag *CustomTag) *envoy_trace_v3.CustomTag {
@@ -112,6 +133,7 @@ type EnvoyTracingConfig struct {
 	RandomSampling   float64
 	MaxPathTagLength uint32
 	CustomTags       []*CustomTag
+	System           contour_v1alpha1.TracingSystem
 }
 
 type CustomTag struct {
