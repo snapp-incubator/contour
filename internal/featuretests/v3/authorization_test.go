@@ -625,12 +625,7 @@ func AuthzTypeGRPC(t *testing.T, rh ResourceEventHandlerWrapper, c *Contour) {
 					envoy_v3.TLSInspector(),
 				),
 				FilterChains: []*envoy_config_listener_v3.FilterChain{
-					filterchaintls(fqdn,
-						&core_v1.Secret{
-							ObjectMeta: fixture.ObjectMeta("certificate"),
-							Type:       "kubernetes.io/tls",
-							Data:       featuretests.Secretdata(featuretests.CERTIFICATE, featuretests.RSA_PRIVATE_KEY),
-						},
+					filterchaintls(fqdn, featuretests.TLSSecret(t, "certificate", &featuretests.ServerCertificate),
 						authzFilterFor(
 							fqdn,
 							&envoy_filter_http_ext_authz_v3.ExtAuthz{
@@ -688,12 +683,7 @@ func authzTypeHTTP(t *testing.T, rh ResourceEventHandlerWrapper, c *Contour) {
 					envoy_v3.TLSInspector(),
 				),
 				FilterChains: []*envoy_config_listener_v3.FilterChain{
-					filterchaintls(fqdn,
-						&core_v1.Secret{
-							ObjectMeta: fixture.ObjectMeta("certificate"),
-							Type:       "kubernetes.io/tls",
-							Data:       featuretests.Secretdata(featuretests.CERTIFICATE, featuretests.RSA_PRIVATE_KEY),
-						},
+					filterchaintls(fqdn, featuretests.TLSSecret(t, "certificate", &featuretests.ServerCertificate),
 						authzFilterFor(
 							fqdn,
 							&envoy_filter_http_ext_authz_v3.ExtAuthz{
@@ -757,12 +747,7 @@ func AuthzTypeHTTPWithPathPrefix(t *testing.T, rh ResourceEventHandlerWrapper, c
 					envoy_v3.TLSInspector(),
 				),
 				FilterChains: []*envoy_config_listener_v3.FilterChain{
-					filterchaintls(fqdn,
-						&core_v1.Secret{
-							ObjectMeta: fixture.ObjectMeta("certificate"),
-							Type:       "kubernetes.io/tls",
-							Data:       featuretests.Secretdata(featuretests.CERTIFICATE, featuretests.RSA_PRIVATE_KEY),
-						},
+					filterchaintls(fqdn, featuretests.TLSSecret(t, "certificate", &featuretests.ServerCertificate),
 						authzFilterFor(
 							fqdn,
 							&envoy_filter_http_ext_authz_v3.ExtAuthz{
@@ -855,12 +840,7 @@ func AuthzTypeHTTPWithAllowedAuthorizationHeaders(t *testing.T, rh ResourceEvent
 					envoy_v3.TLSInspector(),
 				),
 				FilterChains: []*envoy_config_listener_v3.FilterChain{
-					filterchaintls(fqdn,
-						&core_v1.Secret{
-							ObjectMeta: fixture.ObjectMeta("certificate"),
-							Type:       "kubernetes.io/tls",
-							Data:       featuretests.Secretdata(featuretests.CERTIFICATE, featuretests.RSA_PRIVATE_KEY),
-						},
+					filterchaintls(fqdn, featuretests.TLSSecret(t, "certificate", &featuretests.ServerCertificate),
 						authzFilterFor(
 							fqdn,
 							&envoy_filter_http_ext_authz_v3.ExtAuthz{
@@ -969,12 +949,7 @@ func AuthzTypeHTTPWithAllowedUpstreamHeaders(t *testing.T, rh ResourceEventHandl
 					envoy_v3.TLSInspector(),
 				),
 				FilterChains: []*envoy_config_listener_v3.FilterChain{
-					filterchaintls(fqdn,
-						&core_v1.Secret{
-							ObjectMeta: fixture.ObjectMeta("certificate"),
-							Type:       "kubernetes.io/tls",
-							Data:       featuretests.Secretdata(featuretests.CERTIFICATE, featuretests.RSA_PRIVATE_KEY),
-						},
+					filterchaintls(fqdn, featuretests.TLSSecret(t, "certificate", &featuretests.ServerCertificate),
 						authzFilterFor(
 							fqdn,
 							&envoy_filter_http_ext_authz_v3.ExtAuthz{
