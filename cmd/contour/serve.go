@@ -830,7 +830,7 @@ func (s *Server) setupTracingService(tracingConfig *contour_v1alpha1.TracingConf
 		OverallSampling:        overallSampling,
 		MaxPathTagLength:       ptr.Deref(tracingConfig.MaxPathTagLength, 256),
 		CustomTags:             customTags,
-		System:                 ref.Val(tracingConfig.System, contour_api_v1alpha1.TracingSystemOpenTelemetry),
+		System:                 ptr.Deref(tracingConfig.System, contour_v1alpha1.TracingSystemOpenTelemetry),
 	}, nil
 }
 
@@ -878,10 +878,10 @@ func (s *Server) setupGlobalExternalAuthentication(contourConfiguration contour_
 	}
 
 	switch contourConfiguration.GlobalExternalAuthorization.ServiceAPIType {
-	case contour_api_v1.AuthorizationGRPCService:
-		globalExternalAuthConfig.ServiceAPIType = contour_api_v1.AuthorizationGRPCService
-	case contour_api_v1.AuthorizationHTTPService:
-		globalExternalAuthConfig.ServiceAPIType = contour_api_v1.AuthorizationHTTPService
+	case contour_v1.AuthorizationGRPCService:
+		globalExternalAuthConfig.ServiceAPIType = contour_v1.AuthorizationGRPCService
+	case contour_v1.AuthorizationHTTPService:
+		globalExternalAuthConfig.ServiceAPIType = contour_v1.AuthorizationHTTPService
 
 		if contourConfiguration.GlobalExternalAuthorization.HTTPServerSettings != nil {
 			globalExternalAuthConfig.HTTPPathPrefix = contourConfiguration.GlobalExternalAuthorization.HTTPServerSettings.PathPrefix
