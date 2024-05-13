@@ -131,6 +131,7 @@ func Defaults() contour_v1alpha1.ContourConfigurationSpec {
 				EnvoyAdminPort:            ptr.To(9001),
 				EnvoyStripTrailingHostDot: ptr.To(false),
 			},
+			EnableStatPrefix: ptr.To(false),
 		},
 		Gateway: nil,
 		HTTPProxy: &contour_v1alpha1.HTTPProxyConfig{
