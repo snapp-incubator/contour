@@ -281,6 +281,7 @@ func TestTracingConfig(t *testing.T) {
 						}),
 					},
 				},
+				SpawnUpstreamSpan: wrapperspb.Bool(true),
 			},
 		},
 	}
