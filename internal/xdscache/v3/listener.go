@@ -179,8 +179,6 @@ type TracingConfig struct {
 	MaxPathTagLength uint32
 
 	CustomTags []*CustomTag
-
-	System contour_v1alpha1.TracingSystem
 }
 
 type CustomTag struct {
@@ -660,7 +658,6 @@ func envoyTracingConfig(config *TracingConfig) *envoy_v3.EnvoyTracingConfig {
 		RandomSampling:   config.RandomSampling,
 		MaxPathTagLength: config.MaxPathTagLength,
 		CustomTags:       envoyTracingConfigCustomTag(config.CustomTags),
-		System:           config.System,
 	}
 }
 
