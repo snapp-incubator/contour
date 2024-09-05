@@ -869,7 +869,7 @@ func (p *HTTPProxyProcessor) computeRoutes(
 		if rootProxy.Spec.VirtualHost.AuthorizationConfigured() || p.GlobalExternalAuthorization != nil {
 			// When global external authorization or authorization at vhost is configured
 			// it is enabled by default unless in some AuthPolicy it gets disabled downward.
-			// so by default disabled is euqal to false unless global ext_auth overwrites it
+			// so by default disabled is equal to false unless global ext_auth overwrites it
 			// which later can be overwritten by vhost authPolicy per vhost which it self
 			// can be overwritten by route authPolicy per route.
 			disabled := false
