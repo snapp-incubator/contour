@@ -867,12 +867,25 @@ func (p *HTTPProxyProcessor) computeRoutes(
 		// enable it on the route and propagate defaults
 		// downwards.
 		if rootProxy.Spec.VirtualHost.AuthorizationConfigured() || p.GlobalExternalAuthorization != nil {
+			// When global external authorization or authorization at vhost is configured
+			// it is enabled by default unless in some AuthPolicy it gets disabled downward.
+			// so by default disabled is equal to false unless global ext_auth overwrites it
+			// which later can be overwritten by vhost authPolicy per vhost which it self
+			// can be overwritten by route authPolicy per route.
+			disabled := false
+
+			if p.GlobalExternalAuthorization != nil && p.GlobalExternalAuthorization.AuthPolicy != nil {
+				disabled = p.GlobalExternalAuthorization.AuthPolicy.Disabled
+			}
+
 			// When the ext_authz filter is added to a
 			// vhost, it is in enabled state, but we can
 			// disable it per route. We emulate disabling
 			// it at the vhost layer by defaulting the state
 			// from the root proxy.
-			disabled := rootProxy.Spec.VirtualHost.DisableAuthorization()
+			if rootProxy.Spec.VirtualHost.AuthorizationConfigured() {
+				disabled = rootProxy.Spec.VirtualHost.DisableAuthorization()
+			}
 
 			// Take the default for enabling authorization
 			// from the virtual host. If this route has a

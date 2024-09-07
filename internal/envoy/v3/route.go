@@ -131,6 +131,13 @@ func buildRoute(dagRoute *dag.Route, vhostName string, secure bool) *envoy_route
 		// envoy.RouteRoute. Currently the DAG processor adds any HTTP->HTTPS
 		// redirect routes to *both* the insecure and secure vhosts.
 		route.Action = UpgradeHTTPS()
+
+		route.TypedPerFilterConfig = map[string]*anypb.Any{}
+		if dagRoute.AuthDisabled {
+			route.TypedPerFilterConfig["envoy.filters.http.ext_authz"] = routeAuthzDisabled()
+		} else if len(dagRoute.AuthContext) > 0 {
+			route.TypedPerFilterConfig["envoy.filters.http.ext_authz"] = routeAuthzContext(dagRoute.AuthContext)
+		}
 	case dagRoute.DirectResponse != nil:
 		route.Action = routeDirectResponse(dagRoute.DirectResponse)
 	case dagRoute.Redirect != nil:
