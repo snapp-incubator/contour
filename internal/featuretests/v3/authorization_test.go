@@ -31,6 +31,8 @@ import (
 	envoy_v3 "github.com/projectcontour/contour/internal/envoy/v3"
 	"github.com/projectcontour/contour/internal/featuretests"
 	"github.com/projectcontour/contour/internal/fixture"
+	"github.com/projectcontour/contour/internal/protobuf"
+	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -343,14 +345,16 @@ func authzOverrideDisabled(t *testing.T, rh ResourceEventHandlerWrapper, c *Cont
 						Action: withRedirect(),
 					},
 					&envoy_route_v3.Route{
-						Match:  routePrefix("/default"),
-						Action: withRedirect(),
+						Match:                routePrefix("/default"),
+						Action:               withRedirect(),
+						TypedPerFilterConfig: disabledConfig,
 					},
 				),
 				envoy_v3.VirtualHost(enabled,
 					&envoy_route_v3.Route{
-						Match:  routePrefix("/disabled"),
-						Action: withRedirect(),
+						Match:                routePrefix("/disabled"),
+						Action:               withRedirect(),
+						TypedPerFilterConfig: disabledConfig,
 					},
 					&envoy_route_v3.Route{
 						Match:  routePrefix("/default"),
@@ -439,6 +443,19 @@ func authzMergeRouteContext(t *testing.T, rh ResourceEventHandlerWrapper, c *Con
 					&envoy_route_v3.Route{
 						Match:  routePrefix("/"),
 						Action: withRedirect(),
+						TypedPerFilterConfig: map[string]*anypb.Any{
+							"envoy.filters.http.ext_authz": protobuf.MustMarshalAny(&envoy_config_filter_http_ext_authz_v3.ExtAuthzPerRoute{
+								Override: &envoy_config_filter_http_ext_authz_v3.ExtAuthzPerRoute_CheckSettings{
+									CheckSettings: &envoy_config_filter_http_ext_authz_v3.CheckSettings{
+										ContextExtensions: map[string]string{
+											"common-element": "leaf",
+											"leaf-element":   "leaf",
+											"root-element":   "root",
+										},
+									},
+								},
+							}),
+						},
 					},
 				),
 			),
