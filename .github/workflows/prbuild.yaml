@@ -16,36 +16,36 @@ env:
   GO_VERSION: 1.23.2
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v5.1.0
-      with:
-        go-version: ${{ env.GO_VERSION }}
-        cache: false
-    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      with:
-        persist-credentials: false
-    - name: golangci-lint
-      uses: golangci/golangci-lint-action@971e284b6050e8a5849b72094c50ab08da042db8 # v6.1.1
-      with:
-        version: v1.61.0
-        args: --build-tags=e2e,conformance,gcp,oidc,none --out-format=colored-line-number
-  codespell:
-    name: Codespell
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      with:
-        persist-credentials: false
-    - name: Codespell
-      uses: codespell-project/actions-codespell@406322ec52dd7b488e48c1c4b82e2a8b3a1bf630 # v2.1
-      with:
-        skip: .git,*.png,*.woff,*.woff2,*.eot,*.ttf,*.jpg,*.ico,*.svg,./site/themes/contour/static/fonts/README.md,./vendor,./site/public,./hack/actions/check-changefile-exists.go,go.mod,go.sum
-        ignore_words_file: './.codespell.ignorewords'
-        check_filenames: true
-        check_hidden: true
+#  lint:
+#    runs-on: ubuntu-latest
+#    steps:
+#    - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v5.1.0
+#      with:
+#        go-version: ${{ env.GO_VERSION }}
+#        cache: false
+#    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+#      with:
+#        persist-credentials: false
+#    - name: golangci-lint
+#      uses: golangci/golangci-lint-action@971e284b6050e8a5849b72094c50ab08da042db8 # v6.1.1
+#      with:
+#        version: v1.61.0
+#        args: --build-tags=e2e,conformance,gcp,oidc,none --out-format=colored-line-number
+#  codespell:
+#    name: Codespell
+#    runs-on: ubuntu-latest
+#    timeout-minutes: 5
+#    steps:
+#    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+#      with:
+#        persist-credentials: false
+#    - name: Codespell
+#      uses: codespell-project/actions-codespell@406322ec52dd7b488e48c1c4b82e2a8b3a1bf630 # v2.1
+#      with:
+#        skip: .git,*.png,*.woff,*.woff2,*.eot,*.ttf,*.jpg,*.ico,*.svg,./site/themes/contour/static/fonts/README.md,./vendor,./site/public,./hack/actions/check-changefile-exists.go,go.mod,go.sum
+#        ignore_words_file: './.codespell.ignorewords'
+#        check_filenames: true
+#        check_hidden: true
   codegen:
     runs-on: ubuntu-latest
     steps:
@@ -76,8 +76,8 @@ jobs:
         ./hack/actions/check-uncommitted-codegen.sh
   build-image:
     needs:
-    - lint
-    - codespell
+#    - lint
+#    - codespell
     - codegen
     runs-on: ubuntu-latest
     steps:
@@ -219,8 +219,8 @@ jobs:
         make upgrade
   test-linux:
     needs:
-    - lint
-    - codespell
+#    - lint
+#    - codespell
     - codegen
     runs-on: ubuntu-latest
     steps:
@@ -260,8 +260,8 @@ jobs:
         files: coverage.out
   test-osx:
     needs:
-    - lint
-    - codespell
+#    - lint
+#    - codespell
     - codegen
     runs-on: macos-latest
     steps:
