@@ -23,6 +23,7 @@ import (
 	envoy_transport_socket_tls_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
 	resource "github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 	"k8s.io/apimachinery/pkg/types"
 
 	contour_v1 "github.com/projectcontour/contour/apis/projectcontour/v1"
@@ -151,6 +152,9 @@ type ListenerConfig struct {
 
 	// SocketOptions configures socket options HTTP and HTTPS listeners.
 	SocketOptions *contour_v1alpha1.SocketOptions
+
+	// MaxConnectionsToAcceptPerSocketEvent defines how many new connections to accept per socket event loop iteration.
+	MaxConnectionsToAcceptPerSocketEvent *uint32
 }
 
 type ExtensionServiceConfig struct {
@@ -608,6 +612,13 @@ func (c *ListenerCache) OnChange(root *dag.DAG) {
 					ExactBalance: &envoy_config_listener_v3.Listener_ConnectionBalanceConfig_ExactBalance{},
 				},
 			}
+		}
+	}
+
+	// 2. max_connections_to_accept_per_socket_event
+	if cfg.MaxConnectionsToAcceptPerSocketEvent != nil {
+		for _, listener := range listeners {
+			listener.MaxConnectionsToAcceptPerSocketEvent = wrapperspb.UInt32(*cfg.MaxConnectionsToAcceptPerSocketEvent)
 		}
 	}
 
