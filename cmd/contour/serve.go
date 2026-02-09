@@ -713,7 +713,7 @@ func (s *Server) doServe() error {
 	return s.mgr.Start(signals.SetupSignalHandler())
 }
 
-func (s *Server) getExtensionSvcConfig(name, namespace string) (xdscache_v3.ExtensionServiceConfig, error) {
+func (s *Server) getExtensionSvcConfig(name, namespace string) (dag.ExtensionServiceConfig, error) {
 	extensionSvc := &contour_v1alpha1.ExtensionService{}
 	key := client.ObjectKey{
 		Namespace: namespace,
@@ -723,7 +723,7 @@ func (s *Server) getExtensionSvcConfig(name, namespace string) (xdscache_v3.Exte
 	// Using GetAPIReader() here because the manager's caches won't be started yet,
 	// so reads from the manager's client (which uses the caches for reads) will fail.
 	if err := s.mgr.GetAPIReader().Get(context.Background(), key, extensionSvc); err != nil {
-		return xdscache_v3.ExtensionServiceConfig{}, fmt.Errorf("error getting extension service %s: %v", key, err)
+		return dag.ExtensionServiceConfig{}, fmt.Errorf("error getting extension service %s: %v", key, err)
 	}
 
 	var responseTimeout timeout.Setting
@@ -732,7 +732,7 @@ func (s *Server) getExtensionSvcConfig(name, namespace string) (xdscache_v3.Exte
 	if tp := extensionSvc.Spec.TimeoutPolicy; tp != nil {
 		responseTimeout, err = timeout.Parse(tp.Response)
 		if err != nil {
-			return xdscache_v3.ExtensionServiceConfig{}, fmt.Errorf("error parsing extension service %s response timeout: %v", key, err)
+			return dag.ExtensionServiceConfig{}, fmt.Errorf("error parsing extension service %s response timeout: %v", key, err)
 		}
 	}
 
@@ -741,7 +741,7 @@ func (s *Server) getExtensionSvcConfig(name, namespace string) (xdscache_v3.Exte
 		sni = extensionSvc.Spec.UpstreamValidation.SubjectName
 	}
 
-	extensionSvcConfig := xdscache_v3.ExtensionServiceConfig{
+	extensionSvcConfig := dag.ExtensionServiceConfig{
 		ExtensionService: key,
 		Timeout:          responseTimeout,
 		SNI:              sni,
@@ -750,7 +750,7 @@ func (s *Server) getExtensionSvcConfig(name, namespace string) (xdscache_v3.Exte
 	return extensionSvcConfig, nil
 }
 
-func (s *Server) setupTracingService(tracingConfig *contour_v1alpha1.TracingConfig) (*xdscache_v3.TracingConfig, error) {
+func (s *Server) setupTracingService(tracingConfig *contour_v1alpha1.TracingConfig) (*dag.TracingConfig, error) {
 	if tracingConfig == nil {
 		return nil, nil
 	}
@@ -761,20 +761,20 @@ func (s *Server) setupTracingService(tracingConfig *contour_v1alpha1.TracingConf
 		return nil, err
 	}
 
-	var customTags []*xdscache_v3.CustomTag
+	var customTags []*dag.CustomTag
 
 	if ptr.Deref(tracingConfig.IncludePodDetail, true) {
-		customTags = append(customTags, &xdscache_v3.CustomTag{
+		customTags = append(customTags, &dag.CustomTag{
 			TagName:         "podName",
 			EnvironmentName: "HOSTNAME",
-		}, &xdscache_v3.CustomTag{
+		}, &dag.CustomTag{
 			TagName:         "podNamespace",
 			EnvironmentName: "CONTOUR_NAMESPACE",
 		})
 	}
 
 	for _, customTag := range tracingConfig.CustomTags {
-		customTags = append(customTags, &xdscache_v3.CustomTag{
+		customTags = append(customTags, &dag.CustomTag{
 			TagName:           customTag.TagName,
 			Literal:           customTag.Literal,
 			RequestHeaderName: customTag.RequestHeaderName,
@@ -786,7 +786,7 @@ func (s *Server) setupTracingService(tracingConfig *contour_v1alpha1.TracingConf
 		overallSampling = 100.0
 	}
 
-	return &xdscache_v3.TracingConfig{
+	return &dag.TracingConfig{
 		ServiceName:            ptr.Deref(tracingConfig.ServiceName, "contour"),
 		ExtensionServiceConfig: extensionSvcConfig,
 		OverallSampling:        overallSampling,
@@ -795,7 +795,7 @@ func (s *Server) setupTracingService(tracingConfig *contour_v1alpha1.TracingConf
 	}, nil
 }
 
-func (s *Server) setupRateLimitService(contourConfiguration contour_v1alpha1.ContourConfigurationSpec) (*xdscache_v3.RateLimitConfig, error) {
+func (s *Server) setupRateLimitService(contourConfiguration contour_v1alpha1.ContourConfigurationSpec) (*dag.RateLimitConfig, error) {
 	if contourConfiguration.RateLimitService == nil {
 		return nil, nil
 	}
@@ -806,7 +806,7 @@ func (s *Server) setupRateLimitService(contourConfiguration contour_v1alpha1.Con
 		return nil, err
 	}
 
-	return &xdscache_v3.RateLimitConfig{
+	return &dag.RateLimitConfig{
 		ExtensionServiceConfig: extensionSvcConfig,
 		Domain:                 contourConfiguration.RateLimitService.Domain,
 
@@ -816,7 +816,7 @@ func (s *Server) setupRateLimitService(contourConfiguration contour_v1alpha1.Con
 	}, nil
 }
 
-func (s *Server) setupGlobalExternalAuthentication(contourConfiguration contour_v1alpha1.ContourConfigurationSpec) (*xdscache_v3.GlobalExternalAuthConfig, error) {
+func (s *Server) setupGlobalExternalAuthentication(contourConfiguration contour_v1alpha1.ContourConfigurationSpec) (*dag.ExternalAuthzConfig, error) {
 	if contourConfiguration.GlobalExternalAuthorization == nil {
 		return nil, nil
 	}
@@ -832,7 +832,7 @@ func (s *Server) setupGlobalExternalAuthentication(contourConfiguration contour_
 		context = contourConfiguration.GlobalExternalAuthorization.AuthPolicy.Context
 	}
 
-	globalExternalAuthConfig := &xdscache_v3.GlobalExternalAuthConfig{
+	globalExternalAuthConfig := &dag.ExternalAuthzConfig{
 		ExtensionServiceConfig: extensionSvcConfig,
 		FailOpen:               contourConfiguration.GlobalExternalAuthorization.FailOpen,
 		Context:                context,

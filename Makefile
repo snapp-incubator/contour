@@ -153,6 +153,7 @@ container: ## Build the Contour container image
 		$(DOCKER_BUILD_LABELS) \
 		$(shell pwd) \
 		--tag $(IMAGE):$(VERSION)
+	docker push $(IMAGE):$(VERSION)
 
 push: ## Push the Contour container image to the Docker registry
 push: container

@@ -23,6 +23,12 @@ func (v *VirtualHost) AuthorizationConfigured() bool {
 	return v.Authorization != nil
 }
 
+// AuthzOverriden returns whether AuthzOverride is
+// set on this route.
+func (r *Route) AuthzOverriden() bool {
+	return r.AuthzOverride != nil
+}
+
 // DisableAuthorization returns true if this virtual host disables
 // authorization. If an authorization server is present, the default
 // policy is to not disable.
@@ -38,6 +44,16 @@ func (v *VirtualHost) DisableAuthorization() bool {
 	}
 
 	return false
+}
+
+// DisableAuthorization returns true if this route disables
+// authorization. If an authorization server is present, the default
+// policy is to not disable.
+func (r *Route) DisableAuthorization() bool {
+	if !r.AuthzOverriden() || r.AuthzOverride.AuthPolicy == nil {
+		return false
+	}
+	return r.AuthzOverride.AuthPolicy.Disabled
 }
 
 // IsConfigured returns whether service ref is configured
@@ -68,6 +84,9 @@ func (r *Route) GetPrefixReplacements() []ReplacePrefix {
 // AuthorizationContext merges the parent context entries with the
 // context from this Route. Common keys from the parent map will be
 // overwritten by keys from the route. The parent map may be nil.
+// Route-level context maintains backward compatibility by checking:
+//	- First route.authzOverride (newer field)
+//	- Then route.authPolicy (legacy field)
 func (r *Route) AuthorizationContext(parent map[string]string) map[string]string {
 	values := make(map[string]string, len(parent))
 
@@ -75,10 +94,16 @@ func (r *Route) AuthorizationContext(parent map[string]string) map[string]string
 		values[k] = v
 	}
 
-	if r.AuthPolicy != nil {
-		for k, v := range r.AuthPolicy.Context {
-			values[k] = v
+	var authContext map[string]string
+	if r.AuthzOverride != nil {
+		if r.AuthzOverride.AuthPolicy != nil {
+			authContext = r.AuthzOverride.AuthPolicy.Context
 		}
+	} else if r.AuthPolicy != nil {
+		authContext = r.AuthPolicy.Context
+	}
+	for k, v := range authContext {
+		values[k] = v
 	}
 
 	if len(values) == 0 {
