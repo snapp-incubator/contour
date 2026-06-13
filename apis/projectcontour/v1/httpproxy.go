@@ -18,6 +18,10 @@ import (
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// HTTPVersion is an alias to enforce validation
+// +kubebuilder:validation:Enum=h2;http/1.1
+type HTTPVersion string
+
 // HTTPProxySpec defines the spec of the CRD.
 type HTTPProxySpec struct {
 	// Virtualhost appears at most once. If it is present, the object is considered
@@ -40,6 +44,11 @@ type HTTPProxySpec struct {
 	// is given precedence over this field.
 	// +optional
 	IngressClassName string `json:"ingressClassName,omitempty"`
+
+	// HTTPVersions specify the http versions to offer for this HTTPProxy.
+	// If empty, the DefaultHTTPVersions from v1alpha1.EnvoyConfig will be used.
+	// It is ignored when TCPProxy is set.
+	HTTPVersions []HTTPVersion `json:"httpVersions,omitempty"`
 }
 
 // Namespace refers to a Kubernetes namespace. It must be a RFC 1123 label.
