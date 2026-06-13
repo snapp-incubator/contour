@@ -139,6 +139,7 @@ func TestOverlayOnDefaults(t *testing.T) {
 				EnvoyAdminPort:            ptr.To(9997),
 				EnvoyStripTrailingHostDot: ptr.To(true),
 			},
+			EnableStatPrefix: ptr.To(false),
 		},
 		Gateway: &contour_v1alpha1.GatewayConfig{
 			GatewayRef: contour_v1alpha1.NamespacedName{

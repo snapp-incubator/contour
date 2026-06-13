@@ -308,6 +308,10 @@ type EnvoyConfig struct {
 	// This is disabled by default
 	// +optional
 	OMEnforcedHealth *HealthConfig `json:"omEnforcedHealth,omitempty"`
+
+	// Set StatPrefix on envoy routes
+	// +optional
+	EnableStatPrefix *bool `json:"enableStatPrefix"`
 }
 
 // DebugConfig contains Contour specific troubleshooting options.
