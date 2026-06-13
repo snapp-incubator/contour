@@ -112,6 +112,16 @@ func buildRoute(dagRoute *dag.Route, vhostName string, secure bool) *envoy_confi
 		Metadata: getRouteMetadata(dagRoute),
 	}
 
+	if dagRoute.Name != "" {
+		route.Decorator = &envoy_config_route_v3.Decorator{
+			Operation: dagRoute.Name,
+		}
+	}
+
+	if dagRoute.StatPrefix != nil {
+		route.StatPrefix = *dagRoute.StatPrefix
+	}
+	
 	switch {
 	case dagRoute.HTTPSUpgrade && !secure:
 		// TODO(dfc) if we ensure the builder never returns a dag.Route connected

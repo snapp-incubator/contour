@@ -28,6 +28,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/utils/ptr"
 
 	contour_v1 "github.com/projectcontour/contour/apis/projectcontour/v1"
 	contour_v1alpha1 "github.com/projectcontour/contour/apis/projectcontour/v1alpha1"
@@ -113,6 +114,9 @@ type HTTPProxyProcessor struct {
 	// configurable and off by default in order to support the feature
 	// without requiring all existing test cases to change.
 	SetSourceMetadataOnRoutes bool
+
+	// Whether to set StatPrefix on envoy routes or not
+	EnableStatPrefix bool
 
 	// GlobalCircuitBreakerDefaults defines global circuit breaker defaults.
 	GlobalCircuitBreakerDefaults *contour_v1alpha1.CircuitBreakers
@@ -689,6 +693,10 @@ func (p *HTTPProxyProcessor) addStatusBadGatewayRoute(routes []*Route, conds []c
 			route.Name = proxy.Name
 		}
 
+		if p.EnableStatPrefix {
+			route.StatPrefix = ptr.To(fmt.Sprintf("%s_%s", proxy.Namespace, proxy.Name))
+		}
+
 		routes = append(routes, route)
 	}
 	return routes
@@ -892,6 +900,14 @@ func (p *HTTPProxyProcessor) computeRoutes(
 			r.Kind = "HTTPProxy"
 			r.Namespace = proxy.Namespace
 			r.Name = proxy.Name
+		}
+
+		if p.EnableStatPrefix {
+			path := "_"
+			if len(route.Conditions) > 0 && route.Conditions[0].Prefix != "" {
+				path = strings.TrimPrefix(route.Conditions[0].Prefix, "/")
+			}
+			r.StatPrefix = ptr.To(fmt.Sprintf("%s_httpproxy_%s_path_%s", proxy.Namespace, proxy.Name, path))
 		}
 
 		// If the enclosing root proxy enabled authorization,
