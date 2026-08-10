@@ -824,12 +824,6 @@ spec:
                                 name.
                               type: string
                           type: object
-                          x-kubernetes-validations:
-                          - message: only one of prefix, suffix, exact, and contains
-                              should be set in the allowedHeader
-                            rule: '(has(self.exact) ? 1 : 0) + (has(self.prefix) ?
-                              1 : 0) + (has(self.suffix) ? 1 : 0) + (has(self.contains)
-                              ? 1 : 0) == 1'
                         type: array
                       allowedUpstreamHeaders:
                         description: |-
@@ -862,12 +856,6 @@ spec:
                                 name.
                               type: string
                           type: object
-                          x-kubernetes-validations:
-                          - message: only one of prefix, suffix, exact, and contains
-                              should be set in the allowedHeader
-                            rule: '(has(self.exact) ? 1 : 0) + (has(self.prefix) ?
-                              1 : 0) + (has(self.suffix) ? 1 : 0) + (has(self.contains)
-                              ? 1 : 0) == 1'
                         type: array
                       pathPrefix:
                         description: PathPrefix Sets a prefix to the value of authorization
@@ -4921,12 +4909,6 @@ spec:
                                     header name.
                                   type: string
                               type: object
-                              x-kubernetes-validations:
-                              - message: only one of prefix, suffix, exact, and contains
-                                  should be set in the allowedHeader
-                                rule: '(has(self.exact) ? 1 : 0) + (has(self.prefix)
-                                  ? 1 : 0) + (has(self.suffix) ? 1 : 0) + (has(self.contains)
-                                  ? 1 : 0) == 1'
                             type: array
                           allowedUpstreamHeaders:
                             description: |-
@@ -4959,12 +4941,6 @@ spec:
                                     header name.
                                   type: string
                               type: object
-                              x-kubernetes-validations:
-                              - message: only one of prefix, suffix, exact, and contains
-                                  should be set in the allowedHeader
-                                rule: '(has(self.exact) ? 1 : 0) + (has(self.prefix)
-                                  ? 1 : 0) + (has(self.suffix) ? 1 : 0) + (has(self.contains)
-                                  ? 1 : 0) == 1'
                             type: array
                           pathPrefix:
                             description: PathPrefix Sets a prefix to the value of
@@ -6365,12 +6341,6 @@ spec:
                                       a header name.
                                     type: string
                                 type: object
-                                x-kubernetes-validations:
-                                - message: only one of prefix, suffix, exact, and
-                                    contains should be set in the allowedHeader
-                                  rule: '(has(self.exact) ? 1 : 0) + (has(self.prefix)
-                                    ? 1 : 0) + (has(self.suffix) ? 1 : 0) + (has(self.contains)
-                                    ? 1 : 0) == 1'
                               type: array
                             allowedUpstreamHeaders:
                               description: |-
@@ -6403,13 +6373,15 @@ spec:
                                       a header name.
                                     type: string
                                 type: object
-                                x-kubernetes-validations:
-                                - message: only one of prefix, suffix, exact, and
-                                    contains should be set in the allowedHeader
-                                  rule: '(has(self.exact) ? 1 : 0) + (has(self.prefix)
-                                    ? 1 : 0) + (has(self.suffix) ? 1 : 0) + (has(self.contains)
-                                    ? 1 : 0) == 1'
                               type: array
+                            headersToAdd:
+                              additionalProperties:
+                                type: string
+                              description: |-
+                                Sets a list of headers that will be included in the request to the authorization service.
+                                Client request headers with the same key will be overridden.
+                                The keys should be also passed in allowedAuthorizationHeaders.
+                              type: object
                             pathPrefix:
                               description: PathPrefix Sets a prefix to the value of
                                 authorization request header Path.
@@ -8197,12 +8169,6 @@ spec:
                                     header name.
                                   type: string
                               type: object
-                              x-kubernetes-validations:
-                              - message: only one of prefix, suffix, exact, and contains
-                                  should be set in the allowedHeader
-                                rule: '(has(self.exact) ? 1 : 0) + (has(self.prefix)
-                                  ? 1 : 0) + (has(self.suffix) ? 1 : 0) + (has(self.contains)
-                                  ? 1 : 0) == 1'
                             type: array
                           allowedUpstreamHeaders:
                             description: |-
@@ -8235,12 +8201,6 @@ spec:
                                     header name.
                                   type: string
                               type: object
-                              x-kubernetes-validations:
-                              - message: only one of prefix, suffix, exact, and contains
-                                  should be set in the allowedHeader
-                                rule: '(has(self.exact) ? 1 : 0) + (has(self.prefix)
-                                  ? 1 : 0) + (has(self.suffix) ? 1 : 0) + (has(self.contains)
-                                  ? 1 : 0) == 1'
                             type: array
                           pathPrefix:
                             description: PathPrefix Sets a prefix to the value of

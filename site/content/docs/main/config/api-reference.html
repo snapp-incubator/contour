@@ -1360,7 +1360,8 @@ descriptor contains 1+ key-value pair entries.</p>
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#projectcontour.io/v1.HTTPAuthorizationServerSettings">HTTPAuthorizationServerSettings</a>)
+<a href="#projectcontour.io/v1.HTTPAuthorizationServerSettings">HTTPAuthorizationServerSettings</a>, 
+<a href="#projectcontour.io/v1.PerRouteHTTPAuthorizationServerSettings">PerRouteHTTPAuthorizationServerSettings</a>)
 </p>
 <p>
 <p>HTTPAuthorizationServerAllowedHeaders specifies how to conditionally match against allowed headers
@@ -1446,8 +1447,7 @@ bool
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#projectcontour.io/v1.AuthorizationServer">AuthorizationServer</a>, 
-<a href="#projectcontour.io/v1.PerRouteAuthorizationServer">PerRouteAuthorizationServer</a>)
+<a href="#projectcontour.io/v1.AuthorizationServer">AuthorizationServer</a>)
 </p>
 <p>
 <p>HTTPAuthorizationServerSettings defines configurations for interacting with an external HTTP authorization server.</p>
@@ -3107,8 +3107,8 @@ whether it&rsquo;s a raw HTTP authorization server or a gRPC authorization serve
 <code>httpSettings</code>
 <br>
 <em>
-<a href="#projectcontour.io/v1.HTTPAuthorizationServerSettings">
-HTTPAuthorizationServerSettings
+<a href="#projectcontour.io/v1.PerRouteHTTPAuthorizationServerSettings">
+PerRouteHTTPAuthorizationServerSettings
 </a>
 </em>
 </td>
@@ -3162,6 +3162,84 @@ AuthorizationServerBufferSettings
 <td>
 <em>(Optional)</em>
 <p>WithRequestBody specifies configuration for sending the client request&rsquo;s body to authorization server.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="projectcontour.io/v1.PerRouteHTTPAuthorizationServerSettings">PerRouteHTTPAuthorizationServerSettings
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#projectcontour.io/v1.PerRouteAuthorizationServer">PerRouteAuthorizationServer</a>)
+</p>
+<p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="white-space:nowrap">
+<code>pathPrefix</code>
+<br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PathPrefix Sets a prefix to the value of authorization request header Path.</p>
+</td>
+</tr>
+<tr>
+<td style="white-space:nowrap">
+<code>allowedAuthorizationHeaders</code>
+<br>
+<em>
+<a href="#projectcontour.io/v1.HTTPAuthorizationServerAllowedHeaders">
+[]HTTPAuthorizationServerAllowedHeaders
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AllowedAuthorizationHeaders specifies client request headers that will be sent to the authorization server.
+Host, Method, Path, Content-Length, and Authorization headers are additionally included in the list.</p>
+</td>
+</tr>
+<tr>
+<td style="white-space:nowrap">
+<code>headersToAdd</code>
+<br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Sets a list of headers that will be included in the request to the authorization service.
+Client request headers with the same key will be overridden.
+The keys should be also passed in allowedAuthorizationHeaders.</p>
+</td>
+</tr>
+<tr>
+<td style="white-space:nowrap">
+<code>allowedUpstreamHeaders</code>
+<br>
+<em>
+<a href="#projectcontour.io/v1.HTTPAuthorizationServerAllowedHeaders">
+[]HTTPAuthorizationServerAllowedHeaders
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AllowedUpstreamHeaders specifies response headers from the authorization server
+that may be added to the original client request before sending it to the upstream.</p>
 </td>
 </tr>
 </tbody>
