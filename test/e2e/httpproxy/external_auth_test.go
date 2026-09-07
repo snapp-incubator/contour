@@ -178,7 +178,7 @@ func testExternalAuth(namespace string) {
 								Prefix: "/first",
 							},
 						},
-						AuthPolicy: &contour_v1.AuthorizationPolicy{
+						AuthPolicy: &contour_v1.RouteAuthorizationPolicy{
 							Context: map[string]string{
 								"target": "first",
 							},
@@ -197,7 +197,7 @@ func testExternalAuth(namespace string) {
 								Prefix: "/second",
 							},
 						},
-						AuthPolicy: &contour_v1.AuthorizationPolicy{
+						AuthPolicy: &contour_v1.RouteAuthorizationPolicy{
 							Disabled: true,
 						},
 						Services: []contour_v1.Service{
@@ -222,13 +222,13 @@ func testExternalAuth(namespace string) {
 						DirectResponsePolicy: &contour_v1.HTTPDirectResponsePolicy{
 							StatusCode: http.StatusTeapot,
 						},
-						AuthPolicy: &contour_v1.AuthorizationPolicy{
+						AuthPolicy: &contour_v1.RouteAuthorizationPolicy{
 							Disabled: true,
 						},
 					},
 
 					{
-						AuthPolicy: &contour_v1.AuthorizationPolicy{
+						AuthPolicy: &contour_v1.RouteAuthorizationPolicy{
 							Context: map[string]string{
 								"target": "default",
 							},

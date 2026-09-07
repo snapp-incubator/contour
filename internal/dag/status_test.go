@@ -2699,6 +2699,85 @@ func TestDAGStatus(t *testing.T) {
 		},
 	})
 
+	proxyInvalidAuthPolicy := &contour_v1.HTTPProxy{
+		ObjectMeta: meta_v1.ObjectMeta{
+			Name:      "invalid-auth-policy",
+			Namespace: fixture.ServiceRootsKuard.Namespace,
+		},
+		Spec: contour_v1.HTTPProxySpec{
+			VirtualHost: &contour_v1.VirtualHost{
+				Fqdn: "invalid-auth-policy.example.com",
+				TLS: &contour_v1.TLS{ //nolint:gosec // G101: Potential hardcoded credentials
+					SecretName: fixture.SecretRootsCert.Name,
+				},
+				AuthzProviders: []contour_v1.AuthorizationProvider{{
+					Name: "provider-a",
+				}},
+			},
+			Routes: []contour_v1.Route{{
+				Conditions: []contour_v1.MatchCondition{{
+					Prefix: "/",
+				}},
+				Services: []contour_v1.Service{{
+					Name: "home",
+					Port: 8080,
+				}},
+				AuthPolicy: &contour_v1.RouteAuthorizationPolicy{
+					Require:  "provider-a",
+					Disabled: true,
+				},
+			}},
+		},
+	}
+
+	run(t, "Setting both require and disabled in route authPolicy is invalid", testcase{
+		objs: []any{proxyInvalidAuthPolicy, fixture.SecretRootsCert, fixture.ServiceRootsKuard},
+		want: map[types.NamespacedName]contour_v1.DetailedCondition{
+			{Name: proxyInvalidAuthPolicy.Name, Namespace: proxyInvalidAuthPolicy.Namespace}: fixture.NewValidCondition().
+				WithError(contour_v1.ConditionTypeAuthError, "InvalidAuthPolicy", "route's auth policy cannot specify both require and disabled"),
+		},
+	})
+
+	proxyAuthzProviderBothPathSettings := &contour_v1.HTTPProxy{
+		ObjectMeta: meta_v1.ObjectMeta{
+			Name:      "authz-provider-both-path-settings",
+			Namespace: fixture.ServiceRootsKuard.Namespace,
+		},
+		Spec: contour_v1.HTTPProxySpec{
+			VirtualHost: &contour_v1.VirtualHost{
+				Fqdn: "authz-provider-both-path-settings.example.com",
+				TLS: &contour_v1.TLS{ //nolint:gosec // G101: Potential hardcoded credentials
+					SecretName: fixture.SecretRootsCert.Name,
+				},
+				AuthzProviders: []contour_v1.AuthorizationProvider{{
+					Name:        "provider-a",
+					ServiceType: contour_v1.AuthorizationHTTPService,
+					HTTPServerSettings: &contour_v1.PerRouteHTTPAuthorizationServerSettings{
+						PathPrefix:  "/prefix",
+						PathOverride: "/override",
+					},
+				}},
+			},
+			Routes: []contour_v1.Route{{
+				Conditions: []contour_v1.MatchCondition{{
+					Prefix: "/",
+				}},
+				Services: []contour_v1.Service{{
+					Name: "home",
+					Port: 8080,
+				}},
+			}},
+		},
+	}
+
+	run(t, "Setting both pathPrefix and pathOverride on an authz provider is invalid", testcase{
+		objs: []any{proxyAuthzProviderBothPathSettings, fixture.SecretRootsCert, fixture.ServiceRootsKuard},
+		want: map[types.NamespacedName]contour_v1.DetailedCondition{
+			{Name: proxyAuthzProviderBothPathSettings.Name, Namespace: proxyAuthzProviderBothPathSettings.Namespace}: fixture.NewValidCondition().
+				WithError(contour_v1.ConditionTypeAuthError, "AuthBadPathSettings", "Spec.VirtualHost.AuthorizationProviders.HTTPServerSettings is invalid: Only one of PathPrefix and PathOverride can be set"),
+		},
+	})
+
 	fallbackCertificate := &contour_v1.HTTPProxy{
 		ObjectMeta: meta_v1.ObjectMeta{
 			Namespace: "roots",

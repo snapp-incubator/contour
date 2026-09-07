@@ -23,6 +23,7 @@ import (
 	envoy_compression_gzip_compressor_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/compression/gzip/compressor/v3"
 	envoy_filter_http_compressor_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/compressor/v3"
 	envoy_filter_http_cors_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/cors/v3"
+	envoy_filter_http_ext_authz_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
 	envoy_filter_http_grpc_stats_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/grpc_stats/v3"
 	envoy_filter_http_grpc_web_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/grpc_web/v3"
 	envoy_filter_http_local_ratelimit_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/local_ratelimit/v3"
@@ -32,6 +33,7 @@ import (
 	envoy_filter_network_http_connection_manager_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	envoy_filter_network_tcp_proxy_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/tcp_proxy/v3"
 	envoy_transport_socket_tls_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
+	envoy_type_v3 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -2004,4 +2006,81 @@ func authzFilter(extras ...any) *envoy_filter_network_http_connection_manager_v3
 		AuthorizationResponseTimeout:       timeout.Setting{},
 		AuthorizationServerWithRequestBody: body,
 	})
+}
+
+func TestFilterExternalAuthzHTTPPath(t *testing.T) {
+	// Build the expected ExtAuthz config for an HTTP service, parameterized
+	// by the path field being set.
+	wantAuthz := func(setPath func(svc *envoy_filter_http_ext_authz_v3.HttpService)) *envoy_filter_network_http_connection_manager_v3.HttpFilter {
+		svc := &envoy_filter_http_ext_authz_v3.HttpService{
+			ServerUri: &envoy_config_core_v3.HttpUri{
+				Uri: "http://dummy/",
+				HttpUpstreamType: &envoy_config_core_v3.HttpUri_Cluster{
+					Cluster: "extension/auth",
+				},
+				Timeout: httpURITimeout(timeout.Setting{}),
+			},
+		}
+		setPath(svc)
+		return &envoy_filter_network_http_connection_manager_v3.HttpFilter{
+			Name: ExtAuthzFilterName,
+			ConfigType: &envoy_filter_network_http_connection_manager_v3.HttpFilter_TypedConfig{
+				TypedConfig: protobuf.MustMarshalAny(&envoy_filter_http_ext_authz_v3.ExtAuthz{
+					ClearRouteCache:  true,
+					FailureModeAllow: false,
+					StatusOnError: &envoy_type_v3.HttpStatus{
+						Code: envoy_type_v3.StatusCode_Forbidden,
+					},
+					TransportApiVersion:    envoy_config_core_v3.ApiVersion_V3,
+					IncludePeerCertificate: true,
+					Services: &envoy_filter_http_ext_authz_v3.ExtAuthz_HttpService{
+						HttpService: svc,
+					},
+				}),
+			},
+		}
+	}
+
+	tests := map[string]struct {
+		authz *dag.ExternalAuthorization
+		want  *envoy_filter_network_http_connection_manager_v3.HttpFilter
+	}{
+		"http path prefix is set on the http service": {
+			authz: &dag.ExternalAuthorization{
+				ServiceAPIType:      dag.AuthorizationServiceHTTP,
+				AuthorizationService: &dag.ExtensionCluster{Name: "extension/auth"},
+				HTTPPathPrefix:      "/check",
+			},
+			want: wantAuthz(func(svc *envoy_filter_http_ext_authz_v3.HttpService) {
+				svc.PathPrefix = "/check"
+			}),
+		},
+		"http path override is set on the http service": {
+			authz: &dag.ExternalAuthorization{
+				ServiceAPIType:       dag.AuthorizationServiceHTTP,
+				AuthorizationService: &dag.ExtensionCluster{Name: "extension/auth"},
+				HTTPPathOverride:     "/check",
+			},
+			want: wantAuthz(func(svc *envoy_filter_http_ext_authz_v3.HttpService) {
+				svc.PathOverride = "/check"
+			}),
+		},
+		"path prefix takes precedence over path override": {
+			authz: &dag.ExternalAuthorization{
+				ServiceAPIType:       dag.AuthorizationServiceHTTP,
+				AuthorizationService: &dag.ExtensionCluster{Name: "extension/auth"},
+				HTTPPathPrefix:       "/prefix",
+				HTTPPathOverride:     "/override",
+			},
+			want: wantAuthz(func(svc *envoy_filter_http_ext_authz_v3.HttpService) {
+				svc.PathPrefix = "/prefix"
+			}),
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			protobuf.ExpectEqual(t, tc.want, FilterExternalAuthz(tc.authz))
+		})
+	}
 }

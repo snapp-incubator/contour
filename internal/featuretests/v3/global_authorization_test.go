@@ -58,7 +58,7 @@ var (
 		},
 	}
 
-	disabledGlobalExtAuthConfig contour_v1.AuthorizationServer = contour_v1.AuthorizationServer{
+	disabledGlobalExtAuthConfig = contour_v1.AuthorizationServer{
 		ExtensionServiceRef: contour_v1.ExtensionServiceReference{
 			Name:      "extension",
 			Namespace: "auth",
@@ -267,7 +267,7 @@ func globalExternalAuthorizationWithMergedAuthPolicy(t *testing.T, rh ResourceEv
 							Port: 80,
 						},
 					},
-					AuthPolicy: &contour_v1.AuthorizationPolicy{
+					AuthPolicy: &contour_v1.RouteAuthorizationPolicy{
 						Context: map[string]string{
 							"header_type": "proxy_config",
 							"header_2":    "message_2",
@@ -403,7 +403,7 @@ func GlobalExternalAuthorizationDisabledByDefaultAndEnabledOnRoute(t *testing.T,
 							Port: 80,
 						},
 					},
-					AuthPolicy: &contour_v1.AuthorizationPolicy{
+					AuthPolicy: &contour_v1.RouteAuthorizationPolicy{
 						Disabled: false,
 					},
 				},
@@ -473,7 +473,7 @@ func globalExternalAuthorizationWithMergedAuthPolicyTLS(t *testing.T, rh Resourc
 							Port: 80,
 						},
 					},
-					AuthPolicy: &contour_v1.AuthorizationPolicy{
+					AuthPolicy: &contour_v1.RouteAuthorizationPolicy{
 						Context: map[string]string{
 							"header_type": "proxy_config",
 							"header_2":    "message_2",
@@ -798,15 +798,12 @@ func TestGlobalAuthorization(t *testing.T) {
 		t.Run(n, func(t *testing.T) {
 			rh, c, done := setup(t,
 				func(cfg *xdscache_v3.ListenerConfig) {
-					cfg.GlobalExternalAuthConfig = &xdscache_v3.GlobalExternalAuthConfig{
-						ExtensionServiceConfig: xdscache_v3.ExtensionServiceConfig{
+					cfg.GlobalExternalAuthConfig = &dag.ExternalAuthzConfig{
+						ExtensionServiceConfig: dag.ExtensionServiceConfig{
 							ExtensionService: k8s.NamespacedNameFrom("auth/extension"),
 							Timeout:          timeout.DurationSetting(defaultResponseTimeout),
 						},
-						ExternalAuthorization: dag.ExternalAuthorization{
-							ServiceAPIType:               dag.AuthorizationServiceGRPC,
-							AuthorizationResponseTimeout: timeout.DurationSetting(defaultResponseTimeout),
-						},
+						ServiceAPIType: dag.AuthorizationServiceGRPC,
 						Context: map[string]string{
 							"header_type": "root_config",
 							"header_1":    "message_1",
